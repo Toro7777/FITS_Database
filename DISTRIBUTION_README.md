@@ -4,7 +4,19 @@ Complete astrophotography FITS file database management tool with integrated FIT
 
 ## Quick Start
 
-### Windows Users
+### Option 1: Run Executable (RECOMMENDED - No Python Required)
+
+**Windows Users:**
+1. Download: `FITS_Database.exe` from dist folder
+2. Double-click to launch
+3. Select your observation folders
+4. Start managing your FITS database!
+
+**That's it!** No installation, no Python, no dependencies.
+
+### Option 2: Run from Python Source (Requires Python)
+
+**Windows Users**
 1. **Install Python** (if not already installed): https://www.python.org/downloads/
    - During installation, check "Add Python to PATH"
 
@@ -13,9 +25,9 @@ Complete astrophotography FITS file database management tool with integrated FIT
    - This will install all required Python packages
 
 3. **Launch the Application**
-   - Double-click `launch_fits_gui.bat`
+   - Double-click `launch_fits_database.bat`
    - Select your observation folders to scan
-   - Start managing your FITS library!
+   - Start managing your FITS database!
 
 ### Mac/Linux Users
 1. **Install Python** (if not already installed)

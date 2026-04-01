@@ -44,7 +44,7 @@ pyinstaller --version
 
 Navigate to the FITS_Database folder:
 ```powershell
-cd F:\Documentos\Python\FITS_Database
+cd path\to\FITS_Database
 python build_exe.py
 ```
 
