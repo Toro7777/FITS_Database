@@ -2438,18 +2438,20 @@ class FITSGUIDatabaseApp:
                 messagebox.showinfo("Success", f"Successfully renamed folder from:\n{current_name}\n\nto:\n{new_name}")
                 
                 # Smart update: just update the renamed entry without full rescan
-                # Find and update the entry in current_data
+                # Match entries by the OLD folder path for precise identification
                 renamed_count = 0
                 for entry in self.current_data:
-                    if entry.get('target_name') == current_name or entry.get('folder_name', '').endswith(os.sep + current_name):
-                        # Update the entry with new folder path
+                    # Match by exact old folder path to avoid ambiguous matches
+                    if entry.get('folder_name', '') == old_folder_path:
+                        # Update the entry with new folder path and name
+                        # Preserve exactly what the user entered - no automatic date/format manipulation
                         entry['folder_name'] = new_folder_path
                         entry['target_name'] = new_name
                         renamed_count += 1
                 
-                # Also update in database entries
+                # Also update in database entries - match by old path for precise update
                 for entry in self.database.entries:
-                    if entry.get('target_name') == current_name or entry.get('folder_name', '').endswith(os.sep + current_name):
+                    if entry.get('folder_name', '') == old_folder_path:
                         entry['folder_name'] = new_folder_path
                         entry['target_name'] = new_name
                 
