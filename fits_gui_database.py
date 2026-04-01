@@ -155,7 +155,7 @@ class FITSDatabase:
                 self.METADATA_KEY: {
                     'scan_path': root_path,
                     'scan_time': datetime.now().isoformat(),
-                    'version': '1.0'
+                    'version': '2.4'
                 },
                 'entries': []
             }
@@ -1183,7 +1183,7 @@ class FITSGUIDatabaseApp:
     
     def __init__(self, root):
         self.root = root
-        self.root.title("FITS Database Viewer")
+        self.root.title("FITS Database Viewer v2.4")
         self.root.geometry("1400x750")
         
         # Initialize theme manager (start with light theme)
