@@ -988,6 +988,196 @@ class FITSDatabase:
         return nina_json
 
 
+class ThemeManager:
+    """Manages GUI themes (dark/light mode)"""
+    
+    # Dark theme colors - FITS Viewer inspired (professional dark blue)
+    DARK_THEME = {
+        'bg': '#11161f',              # Very dark blue (main bg)
+        'fg': '#d8e1f0',              # Light bright blue text
+        'button_bg': '#1e2430',       # Dark blue-grey
+        'button_fg': '#d8e1f0',       # Bright text
+        'button_hover': '#2d3a4d',    # Lighter blue-grey
+        'entry_bg': '#0f1419',        # Almost black blue
+        'entry_fg': '#e9f1ff',        # Very bright blue-white
+        'tree_bg': '#1a2132',         # Dark blue
+        'tree_fg': '#d8e1f0',         # Light text
+        'tree_selection': '#264f8c',  # Professional blue
+        'accent': '#4a9eff',          # Sky blue accent
+        'border': '#2d3a4d',          # Blue-grey border
+        'label_fg': '#aac4ff',        # Light blue labels
+    }
+    
+    # Light theme colors
+    LIGHT_THEME = {
+        'bg': '#f5f5f5',
+        'fg': '#212121',
+        'button_bg': '#e8e8e8',
+        'button_fg': '#212121',
+        'button_hover': '#d8d8d8',
+        'entry_bg': '#ffffff',
+        'entry_fg': '#212121',
+        'tree_bg': '#fafafa',
+        'tree_fg': '#212121',
+        'tree_selection': '#bbdefb',
+        'accent': '#1976d2',
+        'border': '#cccccc',
+        'label_fg': '#666666',
+    }
+    
+    def __init__(self, root, dark_mode=False):
+        self.root = root
+        self.dark_mode = dark_mode
+        self.current_theme = self.DARK_THEME if dark_mode else self.LIGHT_THEME
+        self._apply_theme()
+    
+    def _apply_theme(self):
+        """Apply theme to ttk styles"""
+        style = ttk.Style()
+        theme = self.current_theme
+        
+        # Use 'clam' theme as base (like FITS Viewer) for better customization
+        style.theme_use('clam')
+        
+        # Configure button style
+        style.configure('TButton',
+                       background=theme['button_bg'],
+                       foreground=theme['button_fg'],
+                       borderwidth=1,
+                       focuscolor='none',
+                       padding=8,
+                       relief='flat')
+        style.map('TButton',
+                 background=[('active', theme['button_hover']),
+                            ('pressed', theme['accent']),
+                            ('disabled', theme['border'])],
+                 foreground=[('active', theme['fg']),
+                            ('pressed', theme['fg']),
+                            ('disabled', theme['label_fg'])])
+        
+        # Configure label style
+        style.configure('TLabel',
+                       background=theme['bg'],
+                       foreground=theme['fg'])
+        
+        # Configure frame style
+        style.configure('TFrame',
+                       background=theme['bg'])
+        
+        # Configure LabelFrame style
+        style.configure('TLabelFrame',
+                       background=theme['tree_bg'],
+                       foreground=theme['label_fg'],
+                       bordercolor=theme['border'],
+                       relief='flat')
+        style.configure('TLabelFrame.Label',
+                       background=theme['tree_bg'],
+                       foreground=theme['label_fg'],
+                       font=('Segoe UI', 9, 'bold'))
+        
+        # Configure FolderBox frame for folder selection
+        # White/light background in both modes for maximum contrast
+        folder_box_bg = '#ffffff' if not self.dark_mode else '#1a2132'
+        style.configure('FolderBox.TFrame',
+                       background=folder_box_bg,
+                       borderwidth=1,
+                       relief='solid')
+        
+        # Configure FolderButton style for "Select Folder" buttons (more obvious - accent color)
+        folder_btn_color = '#1976d2' if not self.dark_mode else '#4a9eff'
+        folder_btn_hover = '#1565c0' if not self.dark_mode else '#5aaeee'
+        folder_btn_press = '#0d47a1' if not self.dark_mode else '#3a8ecc'
+        
+        style.configure('Folder.TButton',
+                       background=folder_btn_color,
+                       foreground='#ffffff',
+                       borderwidth=1,
+                       focuscolor='none',
+                       padding=8,
+                       relief='flat')
+        style.map('Folder.TButton',
+                 background=[('active', folder_btn_hover),
+                            ('pressed', folder_btn_press),
+                            ('disabled', theme['border'])],
+                 foreground=[('active', '#ffffff'),
+                            ('pressed', '#ffffff'),
+                            ('disabled', theme['label_fg'])])
+        
+        # Configure entry style
+        style.configure('TEntry',
+                       fieldbackground=theme['entry_bg'],
+                       background=theme['entry_bg'],
+                       foreground=theme['entry_fg'],
+                       borderwidth=1,
+                       relief='solid')
+        style.map('TEntry',
+                 fieldbackground=[('focus', theme['entry_bg'])],
+                 foreground=[('focus', theme['entry_fg'])])
+        
+        # Configure treeview - THIS IS THE KEY PART
+        style.configure('Treeview',
+                       background=theme['tree_bg'],
+                       foreground=theme['tree_fg'],
+                       fieldbackground=theme['tree_bg'],
+                       borderwidth=0,
+                       relief='flat')
+        style.configure('Treeview.Heading',
+                       background=theme['button_bg'],
+                       foreground=theme['button_fg'],
+                       borderwidth=1,
+                       relief='raised')
+        style.map('Treeview',
+                 background=[('selected', theme['tree_selection']),
+                            ('focus', theme['tree_selection'])],
+                 foreground=[('selected', theme['tree_fg']),
+                            ('focus', theme['tree_fg'])])
+        style.map('Treeview.Heading',
+                 background=[('active', theme['button_hover'])])
+        
+        # Configure progressbar
+        style.configure('TProgressbar',
+                       background=theme['accent'],
+                       borderwidth=0,
+                       relief='flat')
+        
+        # Configure scrollbar
+        style.configure('TScrollbar',
+                       background=theme['button_bg'],
+                       troughcolor=theme['bg'],
+                       borderwidth=1,
+                       arrowcolor=theme['button_fg'],
+                       darkcolor=theme['button_bg'],
+                       lightcolor=theme['button_hover'])
+        
+        # Configure checkbutton
+        style.configure('TCheckbutton',
+                       background=theme['bg'],
+                       foreground=theme['fg'],
+                       focuscolor='none',
+                       relief='flat',
+                       borderwidth=0)
+        style.map('TCheckbutton',
+                 background=[('active', theme['bg']),
+                            ('pressed', theme['bg']),
+                            ('focus', theme['bg'])],
+                 foreground=[('active', theme['fg']),
+                            ('pressed', theme['fg'])])
+        
+        # Update root window background
+        self.root.configure(bg=theme['bg'])
+    
+    def toggle_theme(self):
+        """Toggle between dark and light modes"""
+        self.dark_mode = not self.dark_mode
+        self.current_theme = self.DARK_THEME if self.dark_mode else self.LIGHT_THEME
+        self._apply_theme()
+        return self.dark_mode
+    
+    def get_color(self, key):
+        """Get color from current theme"""
+        return self.current_theme.get(key, '#000000')
+
+
 class FITSGUIDatabaseApp:
     """Main GUI Application"""
     
@@ -995,6 +1185,10 @@ class FITSGUIDatabaseApp:
         self.root = root
         self.root.title("FITS Database Viewer")
         self.root.geometry("1400x750")
+        
+        # Initialize theme manager (start with light theme)
+        self.theme_manager = ThemeManager(root, dark_mode=False)
+        self.dark_mode = False
         
         self.database = FITSDatabase()
         self.current_data = []
@@ -1009,7 +1203,7 @@ class FITSGUIDatabaseApp:
         # Directory selection
         self.selected_directory = None
         self.selected_directory_2 = None
-        self.only_light_frames = tk.BooleanVar(value=False)
+        self.only_light_frames = tk.BooleanVar(value=False)  # Unchecked by default
         self.trust_filename = tk.BooleanVar(value=False)
         self.search_filter = tk.StringVar()  # Universal search filter
         
@@ -1026,14 +1220,18 @@ class FITSGUIDatabaseApp:
         control_frame = ttk.Frame(self.root, padding="10")
         control_frame.pack(fill=tk.X)
         
-        # Browse button
-        ttk.Button(control_frame, text="Select Folder 1...", command=self._browse_folder).pack(side=tk.LEFT, padx=5)
-        self.folder1_label = ttk.Label(control_frame, text="No folder", foreground="#666", width=20)
+        # Folder selection box
+        folder_box = ttk.Frame(control_frame, style='FolderBox.TFrame', padding="8")
+        folder_box.pack(side=tk.LEFT, padx=5, pady=3)
+        
+        # Browse button 1
+        ttk.Button(folder_box, text="Select Folder 1...", command=self._browse_folder, style='Folder.TButton').pack(side=tk.LEFT, padx=3)
+        self.folder1_label = ttk.Label(folder_box, text="No folder")
         self.folder1_label.pack(side=tk.LEFT, padx=2)
         
-        # Browse button for second folder
-        ttk.Button(control_frame, text="Select Folder 2...", command=self._browse_folder_2).pack(side=tk.LEFT, padx=5)
-        self.folder2_label = ttk.Label(control_frame, text="No folder", foreground="#666", width=20)
+        # Browse button 2
+        ttk.Button(folder_box, text="Select Folder 2...", command=self._browse_folder_2, style='Folder.TButton').pack(side=tk.LEFT, padx=3)
+        self.folder2_label = ttk.Label(folder_box, text="No folder")
         self.folder2_label.pack(side=tk.LEFT, padx=2)
         
         # Scan button
@@ -1041,6 +1239,9 @@ class FITSGUIDatabaseApp:
         
         # Refresh button
         ttk.Button(control_frame, text="Refresh Last Scan", command=self._refresh_database).pack(side=tk.LEFT, padx=5)
+        
+        # Import CSV button
+        ttk.Button(control_frame, text="Import CSV", command=self._import_csv).pack(side=tk.LEFT, padx=5)
         
         # Export button
         ttk.Button(control_frame, text="Export to CSV", command=self._export_csv).pack(side=tk.LEFT, padx=5)
@@ -1051,6 +1252,13 @@ class FITSGUIDatabaseApp:
         # Launch FITS Viewer button
         ttk.Button(control_frame, text="Launch FITS Viewer", command=self._launch_fits_viewer_blank).pack(side=tk.LEFT, padx=5)
         
+        # Theme toggle button (right aligned)
+        # In light mode (default), show "🌙 Dark" to let user switch to dark
+        # In dark mode, show "☀️ Light" to let user switch to light
+        theme_btn_text = "🌙 Dark" if not self.dark_mode else "☀️ Light"
+        self.theme_toggle_btn = ttk.Button(control_frame, text=theme_btn_text, command=self._toggle_theme, width=10)
+        self.theme_toggle_btn.pack(side=tk.RIGHT, padx=5)
+        
         # Status label
         self.status_label = ttk.Label(control_frame, text="Ready", relief=tk.SUNKEN)
         self.status_label.pack(side=tk.LEFT, padx=20, fill=tk.X, expand=True)
@@ -1059,7 +1267,7 @@ class FITSGUIDatabaseApp:
         progress_frame = ttk.Frame(self.root, padding="10")
         progress_frame.pack(fill=tk.X, padx=10)
         
-        self.progress_label = ttk.Label(progress_frame, text="", foreground="#666")
+        self.progress_label = ttk.Label(progress_frame, text="")
         self.progress_label.pack(side=tk.LEFT, padx=5)
         
         self.progress_bar = ttk.Progressbar(progress_frame, mode='determinate', length=300, maximum=100)
@@ -1137,7 +1345,7 @@ class FITSGUIDatabaseApp:
         self.summary_label.pack(fill=tk.X, padx=10, pady=5)
         
         # Database info label
-        self.db_info_label = ttk.Label(self.root, text="No database loaded", relief=tk.SUNKEN, padding="5", foreground="#666")
+        self.db_info_label = ttk.Label(self.root, text="No database loaded", relief=tk.SUNKEN, padding="5")
         self.db_info_label.pack(fill=tk.X, padx=10, pady=2)
     
     def _load_existing_database(self):
@@ -1165,6 +1373,14 @@ class FITSGUIDatabaseApp:
         # Otherwise, rescan
         self.selected_directory = self.database.last_scan_path
         self._scan_directory()
+    
+    def _toggle_theme(self):
+        """Toggle between dark and light theme"""
+        self.dark_mode = self.theme_manager.toggle_theme()
+        
+        # Update theme button text
+        theme_btn_text = "☀️ Light" if self.dark_mode else "🌙 Dark"
+        self.theme_toggle_btn.config(text=theme_btn_text)
     
     def _browse_folder(self):
         """Open folder browser for first directory"""
@@ -1598,6 +1814,7 @@ class FITSGUIDatabaseApp:
         
         context_menu.add_command(label="Launch in FITS Viewer", command=lambda: self._launch_fits_viewer(matching_entry))
         context_menu.add_separator()
+        context_menu.add_command(label="Rename Session Folder", command=lambda: self._rename_session_folder(matching_entry))
         context_menu.add_command(label="Show Details", command=lambda: self._show_details_from_entry(matching_entry))
         
         try:
@@ -1974,6 +2191,22 @@ class FITSGUIDatabaseApp:
         except Exception as e:
             messagebox.showerror("Error", f"Failed to export: {str(e)}")
     
+    def _import_csv(self):
+        """Import data from CSV and load into the database viewer"""
+        file_path = filedialog.askopenfilename(
+            filetypes=[("CSV files", "*.csv"), ("All files", "*.*")],
+            title="Select CSV file to import"
+        )
+        
+        if not file_path:
+            return
+        
+        try:
+            self._load_csv_data(file_path)
+            messagebox.showinfo("Success", f"Data imported from {file_path}")
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to import: {str(e)}")
+    
     def _export_nina_json_from_entry(self, entry):
         """Export target as NINA JSON file using entry object"""
         if not entry.get('ra_hms') or not entry.get('dec_dms'):
@@ -2136,6 +2369,84 @@ class FITSGUIDatabaseApp:
             
         except Exception as e:
             messagebox.showerror("Error", f"Failed to launch FITS Viewer:\n{str(e)}")
+    
+    def _rename_session_folder(self, entry):
+        """Rename a session folder"""
+        try:
+            folder_name = entry.get('folder_name', '')
+            if not folder_name:
+                messagebox.showwarning("Warning", "Folder path not found in entry")
+                return
+            
+            # Get current folder name (just the base name)
+            current_name = os.path.basename(folder_name)
+            
+            # Create a simple dialog to get new name with current name pre-filled
+            from tkinter.simpledialog import askstring
+            new_name = askstring("Rename Session Folder", 
+                                 f"Enter new name for session folder:",
+                                 parent=self.root,
+                                 initialvalue=current_name)
+            
+            if not new_name or new_name.strip() == '' or new_name == current_name:
+                return  # User cancelled or entered same name
+            
+            new_name = new_name.strip()
+            
+            # Validate new name (no special characters that would be problematic)
+            if any(char in new_name for char in ['<', '>', ':', '"', '|', '?', '*']):
+                messagebox.showerror("Error", "New folder name contains invalid characters: < > : \" | ? *")
+                return
+            
+            # Find the actual folder path
+            folder_found = False
+            old_folder_path = None
+            parent_dir = None
+            scan_directory = None
+            
+            if self.selected_directory:
+                potential_path = Path(self.selected_directory) / folder_name
+                if potential_path.exists():
+                    old_folder_path = str(potential_path)
+                    parent_dir = str(potential_path.parent)
+                    scan_directory = self.selected_directory
+                    folder_found = True
+            
+            if not folder_found and self.selected_directory_2:
+                potential_path = Path(self.selected_directory_2) / folder_name
+                if potential_path.exists():
+                    old_folder_path = str(potential_path)
+                    parent_dir = str(potential_path.parent)
+                    scan_directory = self.selected_directory_2
+                    folder_found = True
+            
+            if not folder_found:
+                messagebox.showerror("Error", f"Could not locate folder: {folder_name}")
+                return
+            
+            # Create new path
+            new_folder_path = os.path.join(parent_dir, new_name)
+            
+            # Check if new name already exists
+            if os.path.exists(new_folder_path):
+                messagebox.showerror("Error", f"A folder with the name '{new_name}' already exists in this location")
+                return
+            
+            # Rename the folder
+            try:
+                os.rename(old_folder_path, new_folder_path)
+                messagebox.showinfo("Success", f"Successfully renamed folder from:\n{current_name}\n\nto:\n{new_name}")
+                
+                # Refresh the database to reflect the change
+                # Keep both directories and do a full rescan of both
+                self._scan_directory()
+            except PermissionError:
+                messagebox.showerror("Error", "Permission denied: Cannot rename folder. Make sure no files are in use.")
+            except Exception as rename_error:
+                messagebox.showerror("Error", f"Failed to rename folder:\n{str(rename_error)}")
+        
+        except Exception as e:
+            messagebox.showerror("Error", f"Error during rename operation:\n{str(e)}")
     
     def _read_image_metadata_from_path(self, csv_path):
         """Read and plot image metadata from CSV path with flexible column detection"""
