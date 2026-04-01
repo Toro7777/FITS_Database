@@ -1203,7 +1203,7 @@ class FITSGUIDatabaseApp:
         # Directory selection
         self.selected_directory = None
         self.selected_directory_2 = None
-        self.only_light_frames = tk.BooleanVar(value=False)  # Unchecked by default
+        self.only_light_frames = tk.BooleanVar(value=True)  # Checked by default - only show LIGHT frames
         self.trust_filename = tk.BooleanVar(value=False)
         self.search_filter = tk.StringVar()  # Universal search filter
         
@@ -2437,9 +2437,25 @@ class FITSGUIDatabaseApp:
                 os.rename(old_folder_path, new_folder_path)
                 messagebox.showinfo("Success", f"Successfully renamed folder from:\n{current_name}\n\nto:\n{new_name}")
                 
-                # Refresh the database to reflect the change
-                # Keep both directories and do a full rescan of both
-                self._scan_directory()
+                # Smart update: just update the renamed entry without full rescan
+                # Find and update the entry in current_data
+                renamed_count = 0
+                for entry in self.current_data:
+                    if entry.get('target_name') == current_name or entry.get('folder_name', '').endswith(os.sep + current_name):
+                        # Update the entry with new folder path
+                        entry['folder_name'] = new_folder_path
+                        entry['target_name'] = new_name
+                        renamed_count += 1
+                
+                # Also update in database entries
+                for entry in self.database.entries:
+                    if entry.get('target_name') == current_name or entry.get('folder_name', '').endswith(os.sep + current_name):
+                        entry['folder_name'] = new_folder_path
+                        entry['target_name'] = new_name
+                
+                # Refresh table without full rescan
+                self._populate_table(self.current_data)
+                messagebox.showinfo("Updated", f"Folder data updated successfully!")
             except PermissionError:
                 messagebox.showerror("Error", "Permission denied: Cannot rename folder. Make sure no files are in use.")
             except Exception as rename_error:
