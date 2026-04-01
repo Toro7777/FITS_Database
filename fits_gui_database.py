@@ -2438,22 +2438,38 @@ class FITSGUIDatabaseApp:
                 messagebox.showinfo("Success", f"Successfully renamed folder from:\n{current_name}\n\nto:\n{new_name}")
                 
                 # Smart update: just update the renamed entry without full rescan
-                # Match entries by the OLD folder path for precise identification
-                renamed_count = 0
+                # Parse new_name to separate date from target if date pattern exists
+                date_pattern = re.compile(r'^(\d{4}-\d{2}-\d{2})\s+(.+)$')
+                date_match = date_pattern.match(new_name)
+                
+                # Determine new capture_date and target_name from new_name
+                if date_match:
+                    # New name has date pattern: extract date and target separately
+                    new_capture_date = date_match.group(1)
+                    new_target_name = date_match.group(2)
+                else:
+                    # New name has NO date pattern: use only the name as target
+                    new_capture_date = None  # Keep existing or use empty
+                    new_target_name = new_name  # Use full new name as target
+                
+                # Find and update the entry in current_data by exact path match
                 for entry in self.current_data:
-                    # Match by exact old folder path to avoid ambiguous matches
                     if entry.get('folder_name', '') == old_folder_path:
-                        # Update the entry with new folder path and name
-                        # Preserve exactly what the user entered - no automatic date/format manipulation
+                        # Update the entry with new folder path
                         entry['folder_name'] = new_folder_path
-                        entry['target_name'] = new_name
-                        renamed_count += 1
+                        entry['target_name'] = new_target_name
+                        # Only update capture_date if new name has date pattern
+                        if new_capture_date:
+                            entry['capture_date'] = new_capture_date
                 
                 # Also update in database entries - match by old path for precise update
                 for entry in self.database.entries:
                     if entry.get('folder_name', '') == old_folder_path:
                         entry['folder_name'] = new_folder_path
-                        entry['target_name'] = new_name
+                        entry['target_name'] = new_target_name
+                        # Only update capture_date if new name has date pattern
+                        if new_capture_date:
+                            entry['capture_date'] = new_capture_date
                 
                 # Refresh table without full rescan
                 self._populate_table(self.current_data)
